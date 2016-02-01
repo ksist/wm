@@ -87,14 +87,14 @@
         <div class="form-group">
           <label class="col-md-4 control-label" for="date">日付</label>
           <div class="col-md-2">
-          <input type="text" class="form-control datepicker" id="date" name="date">
+          <input type="text" class="form-control datepicker" id="date" name="date" required="">
           </div>
         </div>
         <div class="form-group">
           <label class="col-md-4 control-label" for="weight">体重</label>
           <div class="col-md-2">
             <div class="input-group">
-              <input id="weight" name="weight" class="form-control" placeholder="" type="number" required="">
+              <input id="weight" name="weight" class="form-control" placeholder="" type="number" required="" step="0.1">
               <span class="input-group-addon">kg</span>
             </div>
             
@@ -106,7 +106,7 @@
           <label class="col-md-4 control-label" for="bodyFat">体脂肪率</label>
           <div class="col-md-2">
             <div class="input-group">
-              <input id="bodyFat" name="bodyFat" class="form-control" placeholder="" type="number" required="">
+              <input id="bodyFat" name="bodyFat" class="form-control" placeholder="" type="number" required="" step="0.1">
               <span class="input-group-addon">％</span>
             </div>
             
@@ -116,7 +116,7 @@
         <div class="form-group">
           <label class="col-md-4 control-label" for="fat">肥満度</label>  
           <div class="col-md-2">
-          <input id="fat" name="fat" type="number" placeholder="" class="form-control input-md" required="">
+          <input id="fat" name="fat" type="number" placeholder="" class="form-control input-md" required="" step="0.5">
             
           </div>
         </div>
