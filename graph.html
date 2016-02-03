@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>weight management</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="resources/css/bootstrap.min.css" rel="stylesheet">
+    <link href="resources/css/bootstrap-datepicker.min.css" rel="stylesheet">
+    <link href="resources/css/c3.min.css" rel="stylesheet">
+
+    <!-- Header HTML -->
+    <link rel="import" href="header.html">
+
+    <!-- Custom CSS -->
+    <style>
+    body {
+        padding-top: 70px;
+        /* Required padding for .navbar-fixed-top. Remove if using .navbar-static-top. Change if height of navigation changes. */
+    }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+
+    <!-- Header import -->
+    <script>
+    var content = document.querySelector('link[rel="import"]').import;
+    var el = content.querySelector('nav');
+    document.body.appendChild(el.cloneNode(true));
+    </script>
+
+    <!-- Page Content -->
+    <div class="container">
+      <div id='chart'></div>
+    
+    </div>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="resources/js/c3.js"></script>
+    
+    <!-- jQuery Version 1.11.1 -->
+    <script src="resources/js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="resources/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+    google.load("visualization", "1");
+    </script>
+
+    <script>
+    var query = new google.visualization.Query('http://spreadsheets.google.com/tq?key=1b4ku8jZ9u23WK631yfvKWOv2igRNLuAQeUQg-C0cVKg&pub=1');
+    query.send(handleQueryResponse);
+    
+    function handleQueryResponse(response) {
+      var data = response.getDataTable();
+      var dataArray = new Array();
+      dataArray[0] = ['date', '体重', '体脂肪率', '肥満度']
+      for (var row = 0; row < data.getNumberOfRows(); row++) {
+        dataArray[row + 1] = new Array();
+        dataArray[row + 1].push(data.getValue(row, 0));
+        dataArray[row + 1].push(data.getValue(row, 1));
+        dataArray[row + 1].push(data.getValue(row, 3));
+        dataArray[row + 1].push(data.getValue(row, 4));
+      }
+      
+      var chart = c3.generate({
+          data: {
+              rows: dataArray,
+              x: 'date',
+              axes: {
+                '体重': 'y',
+                '体脂肪率': 'y2',
+                '肥満度': 'y2'
+              }
+          },
+          axis: {
+              x: {
+                  type: 'timeseries',
+                  tick: {
+                      format: '%m/%d'
+                  }
+              },
+              y2: {
+                  show: true
+              }
+          }
+      });
+      
+    }
+
+    </script>
+</body>
+
+</html>
