@@ -12,6 +12,7 @@
     <!-- Bootstrap Core CSS -->
     <link href="resources/css/bootstrap.min.css" rel="stylesheet">
     <link href="resources/css/bootstrap-datepicker.min.css" rel="stylesheet">
+    <link href="resources/css/loading.css" rel="stylesheet">
     
     <!-- Header HTML -->
     <link rel="import" href="header.html">
@@ -55,7 +56,7 @@
                 </ul>
             </div>
         </div>-->
-        <form id="myForm" class="form-horizontal" action="https://script.google.com/macros/s/AKfycbyDoVRWZrE9QuOoRk8Sc-kAqTLnv2qEo8DfPl0GbFPLuBG0tkME/exec" method="POST">
+        <form id="myForm" class="form-horizontal">
         <fieldset>
 
         <!-- Form Name -->
@@ -92,7 +93,7 @@
         </div>
         <!-- Text input-->
         <div class="form-group">
-          <label class="col-md-4 control-label" for="fat">肥満度</label>  
+          <label class="col-md-4 control-label" for="fat">内臓脂肪</label>  
           <div class="col-md-2">
           <input id="fat" name="fat" type="number" placeholder="" class="form-control input-md" required="" step="0.5">
             
@@ -103,7 +104,7 @@
         <div class="form-group">
           <label class="col-md-4 control-label" for="submit"></label>
           <div class="col-md-2">
-            <button id="submit" name="submit" class="btn btn-primary" >送信</button>
+            <button id="send" name="send" class="btn btn-primary" >送信</button>
           </div>
         </div>
 
@@ -128,6 +129,26 @@
         todayBtn: "linked",
         autoclose: true
     }).datepicker("setDate", new Date());
+    
+    $('#send').click(function () {
+      if ($('#myForm')[0].checkValidity()) {
+        $('body').append("<div id='loading'></div>");
+        $('#send').prop('disabled', true);
+        $.post(
+          'https://script.google.com/macros/s/AKfycbyDoVRWZrE9QuOoRk8Sc-kAqTLnv2qEo8DfPl0GbFPLuBG0tkME/exec',
+          {
+            'date': $('#date').val(),
+            'weight': $('#weight').val(),
+            'bodyFat': $('#bodyFat').val(),
+            'fat': $('#fat').val()
+          },
+          function() {
+            window.location.href = 'result.html'
+          },
+          'json'
+        );
+      }
+    });
     
     </script>
 </body>
