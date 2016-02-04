@@ -68,7 +68,7 @@
     function handleQueryResponse(response) {
       var data = response.getDataTable();
       var dataArray = new Array();
-      dataArray[0] = ['date', '体重', '体脂肪率', '肥満度']
+      dataArray[0] = ['date', '体重', '体脂肪率', '内臓脂肪']
       for (var row = 0; row < data.getNumberOfRows(); row++) {
         dataArray[row + 1] = new Array();
         dataArray[row + 1].push(data.getValue(row, 0));
@@ -84,7 +84,7 @@
               axes: {
                 '体重': 'y',
                 '体脂肪率': 'y2',
-                '肥満度': 'y2'
+                '内臓脂肪': 'y2'
               }
           },
           axis: {
