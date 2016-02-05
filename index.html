@@ -132,7 +132,7 @@
     
     $('#send').click(function () {
       if ($('#myForm')[0].checkValidity()) {
-        $('body').append("<div id='loading'></div>");
+        $('body').append("<div id='loading'><img src='resources/image/gif-load.gif'></div>");
         $('#send').prop('disabled', true);
         $.post(
           'https://script.google.com/macros/s/AKfycbyDoVRWZrE9QuOoRk8Sc-kAqTLnv2qEo8DfPl0GbFPLuBG0tkME/exec',

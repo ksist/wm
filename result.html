@@ -12,6 +12,7 @@
     <!-- Bootstrap Core CSS -->
     <link href="resources/css/bootstrap.min.css" rel="stylesheet">
     <link href="resources/css/bootstrap-datepicker.min.css" rel="stylesheet">
+    <link href="resources/css/loading.css" rel="stylesheet">
 
     <!-- Header HTML -->
     <link rel="import" href="header.html">
@@ -87,6 +88,8 @@
     </script>
     
     <script>
+    $('body').append("<div id='loading'><img src='resources/image/gif-load.gif'></div>");
+    
     var query = new google.visualization.Query('http://spreadsheets.google.com/tq?key=1b4ku8jZ9u23WK631yfvKWOv2igRNLuAQeUQg-C0cVKg&pub=1');
     query.send(handleQueryResponse);
     
@@ -107,6 +110,7 @@
             + '<th>' + fat + '</th>'
         + '</tr>');
       }
+      $('#loading').hide();
     }
     </script>
 
