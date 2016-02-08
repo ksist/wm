@@ -45,6 +45,10 @@
 
     <!-- Page Content -->
     <div class="container">
+      <div class="form-group">
+        <select class="form-control" id="yearMonth">
+        </select>
+      </div>
       <div id='chart'></div>
     
     </div>
@@ -65,29 +69,54 @@
     <script>
     $('body').append("<div id='loading'><img src='resources/image/gif-load.gif'></div>");
     
-    var query = new google.visualization.Query('http://spreadsheets.google.com/tq?key=1b4ku8jZ9u23WK631yfvKWOv2igRNLuAQeUQg-C0cVKg&pub=1');
+    var thisMonth = new Date();
+    var dataUrl = 'http://spreadsheets.google.com/tq?key=1b4ku8jZ9u23WK631yfvKWOv2igRNLuAQeUQg-C0cVKg&pub=1';
+
+    var monthQuery = new google.visualization.Query(dataUrl);
+    monthQuery.setQuery('select max(A) group by year(A), month(A)');
+    monthQuery.send(handleListResponse);
+    
+    var query = new google.visualization.Query(dataUrl);
+    query.setQuery('select A, B, C, D, E where year(A) = ' + thisMonth.getFullYear() + ' and month(A) = ' + thisMonth.getMonth());
     query.send(handleQueryResponse);
+
+    function handleListResponse(response) {
+      var data = response.getDataTable();
+      for (var row = 0; row < data.getNumberOfRows(); row++) {
+        var tempDate = data.getValue(row, 0);
+        var str = '';
+        if (thisMonth.getFullYear() == tempDate.getFullYear() &&
+            thisMonth.getMonth() == tempDate.getMonth()) {
+          str = str + '<option selected>'
+        } else {
+          str = str + '<option>'
+        }
+        str = str + tempDate.getFullYear() + "/" + (tempDate.getMonth() + 1) + '</option>'
+        $('select').append(str);
+      }
+    }
     
     function handleQueryResponse(response) {
       var data = response.getDataTable();
-      var dataArray = new Array();
-      dataArray[0] = ['date', '体重', '体脂肪率', '内臓脂肪']
+      var dateArray = ['date'];
+      var weightArray = ['体重'];
+      var bodyFatArray = ['体脂肪率'];
+      var fatArray = ['内臓脂肪'];
       for (var row = 0; row < data.getNumberOfRows(); row++) {
-        dataArray[row + 1] = new Array();
-        dataArray[row + 1].push(data.getValue(row, 0));
-        dataArray[row + 1].push(data.getValue(row, 1));
-        dataArray[row + 1].push(data.getValue(row, 3));
-        dataArray[row + 1].push(data.getValue(row, 4));
+        dateArray.push(data.getValue(row, 0));
+        weightArray.push(data.getValue(row, 1));
+        bodyFatArray.push(data.getValue(row, 3));
+        fatArray.push(data.getValue(row, 4));
       }
       
       var chart = c3.generate({
           data: {
-              rows: dataArray,
+              columns: [dateArray, weightArray, bodyFatArray, fatArray],
               x: 'date',
               axes: {
                 '体重': 'y',
                 '体脂肪率': 'y2',
-                '内臓脂肪': 'y2'
+                '内臓脂肪': 'y2',
               }
           },
           axis: {
@@ -98,13 +127,21 @@
                   }
               },
               y2: {
-                  show: true
+                  show: true,
               }
           }
       });
+      chart.hide(['内臓脂肪']);
       $('#loading').hide();
     }
 
+    $('select').change(function () {
+      $('#loading').show();
+      var month = $('option:selected').text().split('/');
+      var query = new google.visualization.Query(dataUrl);
+      query.setQuery('select A, B, C, D, E where year(A) = ' + month[0] + ' and month(A) = ' + (month[1] - 1));
+      query.send(handleQueryResponse);
+    })
     </script>
 </body>
 
