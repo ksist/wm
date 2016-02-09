@@ -49,14 +49,14 @@
         <select class="form-control" id="yearMonth">
         </select>
       </div>
-      <div id='chart'></div>
+      <div id="chart" style="height:350px"></div>
     
     </div>
-    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-    <script src="resources/js/c3.js"></script>
     
     <!-- jQuery Version 1.11.1 -->
     <script src="resources/js/jquery.js"></script>
+    <script src="resources/js/jquery.flot.js"></script>
+    <script src="resources/js/jquery.flot.time.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
     <script src="resources/js/bootstrap.min.js"></script>
@@ -98,40 +98,56 @@
     
     function handleQueryResponse(response) {
       var data = response.getDataTable();
-      var dateArray = ['date'];
-      var weightArray = ['体重'];
-      var bodyFatArray = ['体脂肪率'];
-      var fatArray = ['内臓脂肪'];
+      var weight = {
+        data: [],
+        label: "体重"
+      };
+      var bodyFat = {
+        data: [],
+        label: "体脂肪率",
+        yaxis: 2
+      };
+      var fat = {
+        data: [],
+        label: "内臓脂肪",
+        yaxis: 3
+      };
       for (var row = 0; row < data.getNumberOfRows(); row++) {
-        dateArray.push(data.getValue(row, 0));
-        weightArray.push(data.getValue(row, 1));
-        bodyFatArray.push(data.getValue(row, 3));
-        fatArray.push(data.getValue(row, 4));
+        weight.data.push([data.getValue(row, 0), data.getValue(row, 1)]);
+        bodyFat.data.push([data.getValue(row, 0), data.getValue(row, 3)]);
+        fat.data.push([data.getValue(row, 0), data.getValue(row, 4)]);
       }
       
-      var chart = c3.generate({
-          data: {
-              columns: [dateArray, weightArray, bodyFatArray, fatArray],
-              x: 'date',
-              axes: {
-                '体重': 'y',
-                '体脂肪率': 'y2',
-                '内臓脂肪': 'y2',
-              }
-          },
-          axis: {
-              x: {
-                  type: 'timeseries',
-                  tick: {
-                      format: '%m/%d'
-                  }
-              },
-              y2: {
-                  show: true,
-              }
+      var options = {
+        series: {
+          lines: {show: true},
+          points: {show: true}
+        },
+        xaxes: [{
+          mode: "time",
+          timeformat: "%m/%d"
+        }],
+        yaxes: [{
+          font: {
+            color: "#edc240"
           }
-      });
-      chart.hide(['内臓脂肪']);
+        }, {
+          alignTicksWithAxis: 1,
+          position: "right",
+          font: {
+            color: "#afd8f8"
+          }
+        }, {
+          alignTicksWithAxis: 1,
+          position: "right",
+          font: {
+            color: "#cb4b4b"
+          }
+        }]
+      };
+
+      $.plot("#chart", [ weight, bodyFat, fat ], options);
+
       $('#loading').hide();
     }
 
