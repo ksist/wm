@@ -12,7 +12,6 @@
     <!-- Bootstrap Core CSS -->
     <link href="resources/css/bootstrap.min.css" rel="stylesheet">
     <link href="resources/css/bootstrap-datepicker.min.css" rel="stylesheet">
-    <link href="resources/css/c3.min.css" rel="stylesheet">
     <link href="resources/css/loading.css" rel="stylesheet">
 
     <!-- Header HTML -->
@@ -47,15 +46,14 @@
     <!-- Page Content -->
     <div class="container">
       <h4>月別グラフ</h4>
-      <div id='chart'></div>
+      <div id="chart" style="height:350px"></div>
     </div>
     <!-- /.container -->
 
-    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-    <script src="resources/js/c3.js"></script>
-
     <!-- jQuery Version 1.11.1 -->
     <script src="resources/js/jquery.js"></script>
+    <script src="resources/js/jquery.flot.js"></script>
+    <script src="resources/js/jquery.flot.time.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
     <script src="resources/js/bootstrap.min.js"></script>
@@ -72,45 +70,62 @@
     
     var queryUrl = 'http://spreadsheets.google.com/tq?key=1b4ku8jZ9u23WK631yfvKWOv2igRNLuAQeUQg-C0cVKg&pub=1';
     var query = new google.visualization.Query(queryUrl);
-    query.setQuery('select year(A), month(A) + 1, avg(B), avg(C), avg(D), avg(E) group by year(A), month(A)')
+    query.setQuery('select year(A), month(A), avg(B), avg(C), avg(D), avg(E) group by year(A), month(A)')
     query.send(handleQueryResponse);
     
     function handleQueryResponse(response) {
       var data = response.getDataTable();
-      var dataArray = new Array();
-      dataArray[0] = ['date', '体重', '体脂肪率', '内臓脂肪']
+      var weight = {
+        data: [],
+        label: "体重"
+      };
+      var bodyFat = {
+        data: [],
+        label: "体脂肪率",
+        yaxis: 2
+      };
+      var fat = {
+        data: [],
+        label: "内臓脂肪",
+        yaxis: 3
+      };
       for (var row = 0; row < data.getNumberOfRows(); row++) {
-        dataArray[row + 1] = new Array();
-        dataArray[row + 1].push(data.getValue(row, 0) + '/' + data.getValue(row, 1));
-        dataArray[row + 1].push(Math.round(data.getValue(row, 2) * 10) / 10);
-        dataArray[row + 1].push(Math.round(data.getValue(row, 4) * 10) / 10);
-        dataArray[row + 1].push(Math.round(data.getValue(row, 5) * 10) / 10);
+        var dateTime =  new Date(data.getValue(row, 0), data.getValue(row, 1), 1);
+        weight.data.push([dateTime, data.getValue(row, 2)]);
+        bodyFat.data.push([dateTime, data.getValue(row, 4)]);
+        fat.data.push([dateTime, data.getValue(row, 5)]);
       }
       
-      var chart = c3.generate({
-          data: {
-              rows: dataArray,
-              x: 'date',
-              xFormat: '%Y/%m',
-              axes: {
-                '体重': 'y',
-                '体脂肪率': 'y2',
-                '内臓脂肪': 'y2'
-              }
-          },
-          axis: {
-              x: {
-                  type: 'timeseries',
-                  tick: {
-                      format: '%Y/%m'
-                  }
-              },
-              y2: {
-                  show: true
-              }
+      var options = {
+        series: {
+          lines: {show: true},
+          points: {show: true}
+        },
+        xaxes: [{
+          mode: "time",
+          timeformat: "%Y/%m",
+        }],
+        yaxes: [{
+          font: {
+            color: "#edc240"
           }
-      });
-      chart.hide(['内臓脂肪'])
+        }, {
+          alignTicksWithAxis: 1,
+          position: "right",
+          font: {
+            color: "#afd8f8"
+          }
+        }, {
+          alignTicksWithAxis: 1,
+          position: "right",
+          font: {
+            color: "#cb4b4b"
+          }
+        }]
+      };
+
+      $.plot("#chart", [ weight, bodyFat, fat ], options);
+      
       $('#loading').hide();
     }
     </script>
