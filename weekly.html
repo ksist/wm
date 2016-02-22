@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>weight management</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="resources/css/bootstrap.min.css" rel="stylesheet">
+    <link href="resources/css/bootstrap-datepicker.min.css" rel="stylesheet">
+    <link href="resources/css/loading.css" rel="stylesheet">
+
+    <!-- Header HTML -->
+    <link rel="import" href="header.html">
+
+    <!-- Custom CSS -->
+    <style>
+    body {
+        padding-top: 70px;
+        /* Required padding for .navbar-fixed-top. Remove if using .navbar-static-top. Change if height of navigation changes. */
+    }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+
+    <!-- Header import -->
+    <script>
+    var content = document.querySelector('link[rel="import"]').import;
+    var el = content.querySelector('nav');
+    document.body.appendChild(el.cloneNode(true));
+    </script>
+
+    <!-- Page Content -->
+    <div class="container">
+      <h4>週別</h4>
+      <div class="form-group">
+        <select class="form-control" id="year">
+        </select>
+      </div>
+      <div id="chart" style="height:350px"></div>
+    
+    </div>
+    
+    <!-- jQuery Version 1.11.1 -->
+    <script src="resources/js/jquery.js"></script>
+    <script src="resources/js/jquery.flot.js"></script>
+    <script src="resources/js/jquery.flot.time.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="resources/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+    google.load("visualization", "1");
+    </script>
+
+    <script>
+    $('body').append("<div id='loading'><img src='resources/image/gif-load.gif'></div>");
+    
+    var thisMonth = new Date();
+    var dataUrl = 'http://spreadsheets.google.com/tq?key=1b4ku8jZ9u23WK631yfvKWOv2igRNLuAQeUQg-C0cVKg&pub=1';
+
+    var monthQuery = new google.visualization.Query(dataUrl);
+    monthQuery.setQuery('select max(A) group by year(A)');
+    monthQuery.send(handleListResponse);
+    
+    var query = new google.visualization.Query(dataUrl);
+    query.setQuery('select A, B, C, D, E where year(A) = ' + thisMonth.getFullYear());
+    query.send(handleQueryResponse);
+
+    function handleListResponse(response) {
+      var data = response.getDataTable();
+      for (var row = 0; row < data.getNumberOfRows(); row++) {
+        var tempDate = data.getValue(row, 0);
+        var str = '';
+        if (thisMonth.getFullYear() == tempDate.getFullYear()) {
+          str = str + '<option selected>'
+        } else {
+          str = str + '<option>'
+        }
+        str = str + tempDate.getFullYear() + '年' + '</option>'
+        $('select').append(str);
+      }
+    }
+    
+    function handleQueryResponse(response) {
+      var data = response.getDataTable();
+
+      var result = addWeekly(data);
+      var weight = {
+        data: [],
+        label: "体重"
+      };
+      var bodyFat = {
+        data: [],
+        label: "体脂肪率",
+        yaxis: 2
+      };
+      var fat = {
+        data: [],
+        label: "内臓脂肪",
+        yaxis: 3
+      };
+      for (var i = 0; i < result.length; i++) {
+        weight.data.push([result[i].date, result[i].weight]);
+        bodyFat.data.push([result[i].date, result[i].bodyFat]);
+        fat.data.push([result[i].date, result[i].fat]);
+      }
+      
+      var options = {
+        series: {
+          lines: {show: true},
+          points: {show: true}
+        },
+        xaxes: [{
+          mode: "time",
+          timezone: "browser",
+          timeformat: "%m/%d"
+        }],
+        yaxes: [{
+          font: {
+            color: "#edc240"
+          }
+        }, {
+          alignTicksWithAxis: 1,
+          position: "right",
+          font: {
+            color: "#afd8f8"
+          }
+        }, {
+          alignTicksWithAxis: 1,
+          position: "right",
+          font: {
+            color: "#cb4b4b"
+          }
+        }]
+      };
+
+      $.plot("#chart", [ weight, bodyFat, fat ], options);
+
+      $('#loading').hide();
+    }
+    
+    // 週単位で集計
+    function addWeekly(data) {
+      var dayOfWeek = -1;
+      var tempWeight = 0;
+      var tempBodyFat = 0;
+      var tempFat = 0;
+      var counter = 0;
+      var tempDate;
+      var result = [];
+
+      for (var row = 0; row < data.getNumberOfRows(); row++) {
+        tempDate = data.getValue(row, 0);
+        if (tempDate.getDay() > dayOfWeek) {
+          tempWeight += data.getValue(row, 1);
+          tempBodyFat += data.getValue(row, 3);
+          tempFat += data.getValue(row, 4);
+          counter++;
+        } else {
+          result.push({
+            date: new Date(tempDate.getTime() - ((7 + tempDate.getDay()) * 24 * 60 * 60 * 1000)),
+            weight: tempWeight / counter,
+            bodyFat: tempBodyFat /counter,
+            fat: tempFat / counter
+          });
+          tempWeight = data.getValue(row, 1);
+          tempBodyFat = data.getValue(row, 3);
+          tempFat = data.getValue(row, 4);
+          counter = 1;
+        }
+        dayOfWeek = data.getValue(row, 0).getDay();
+      }
+      result.push({
+        date: new Date(tempDate.getTime() - (tempDate.getDay() * 24 * 60 * 60 * 1000)),
+        weight: tempWeight / counter,
+        bodyFat: tempBodyFat /counter,
+        fat: tempFat / counter
+      });
+
+      return result;
+    }
+
+    $('select').change(function () {
+      $('#loading').show();
+      var year = $('option:selected').text().substring(0, 4);
+      var query = new google.visualization.Query(dataUrl);
+      query.setQuery('select A, B, C, D, E where year(A) = ' + year);
+      query.send(handleQueryResponse);
+    })
+    </script>
+</body>
+
+</html>
